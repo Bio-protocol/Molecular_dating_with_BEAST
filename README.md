@@ -64,10 +64,13 @@ cd ../../../
 
 ## Input Data
 
-1. BAM files and reference genome
+#### 1. BAM files and reference genome
+The input BAM files `bam/*.bam` are compressed binary versions of SAM files that represent aligned sequences of the samples to the [reference genome](https://gatk.broadinstitute.org/hc/en-us/articles/360035891071-Reference-genome). 
+BAM/SAM is commonly used to represent sequence alignment of next-generation sequencing data. Specification of the format can be found [here](https://samtools.github.io/hts-specs/SAMv1.pdf). 
+You can generate BAM files for your samples with most alignment tools such as bwa or bowtie. 
+We will start from these files and generate site-by-site [gVCF Files](https://gatk.broadinstitute.org/hc/en-us/articles/360035531812-GVCF-Genomic-Variant-Call-Format) for making gene seqeunce files. 
 
-
-2. Sample information
+#### 2. Sample information
 The file `input/sample_info.txt` a tab-delimited file containing the names and group assignments of the samples. The group assignment will be used for plotting.
 The first ten rows of the file:
 ```
@@ -82,9 +85,9 @@ ANN1146	Ann-2
 ANN1159	Ann-2
 ANN0870	Ann-2
 ```
-The first 5 samples are from species `Ann` with genotype 0/0 of the focal chromosomal inversion (group 0), and the next 5 samples are from species `Ann` with genotype 1/1 (group 2). We also include 2 samples from other related (sub)species and the outgroups. 
+The first 5 samples are from species `Ann` with genotype 0/0 of the focal chromosomal inversion (group 0), and the next 5 samples are from species `Ann` with genotype 1/1 (group 2). We also include 2 samples from each of other related (sub)species and the outgroup. 
 
-3. Locations of focal genes within the region
+#### 3. Locations of focal genes within the region
 The file `input/genes.locations.txt` is a tab-delimited file with the following columns: gene name (strings without spaces), chromosome, start and end (in bp, based on the reference genome). It will be used to extact gene sequences from BAM files.
 The first five rows of the example data:
 ```
