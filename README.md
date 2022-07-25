@@ -17,11 +17,11 @@ This is an example workflow to construct gene tree and perform molecular dating 
 
 - __Required software and versions__: 
 
-    - [gatk](https://gatk.broadinstitute.org/) (v4.0.8.1)
+    - [GATK](https://gatk.broadinstitute.org/) (v4.0.8.1)
     - [samtools](http://www.htslib.org/doc/samtools.html) (v1.3)
-    - [perl](http://www.perl.org/) (v5.16.3)
+    - [Perl](http://www.perl.org/) (v5.16.3)
     - [BEAST](https://beast.community/) (v1.10.4)
-    - [beagle](https://github.com/beagle-dev/beagle-lib) (v3.1.1)
+    - [BEAGLE](https://github.com/beagle-dev/beagle-lib) (v3.1.1)
     - [R](https://www.r-project.org/) (version 3.6.2)
     - [RStudio](https://rstudio.com/) (version 1.1.463)
     - [ggtree](http://bioconductor.org/packages/release/bioc/html/ggtree.html) (v3.1.3.992)
@@ -68,7 +68,7 @@ cd ../../../
 The input BAM files `bam/*.bam` are compressed binary versions of SAM files that represent aligned sequences of the samples to the [reference genome](https://gatk.broadinstitute.org/hc/en-us/articles/360035891071-Reference-genome). 
 BAM/SAM is commonly used to represent sequence alignment of next-generation sequencing data. Specification of the format can be found [here](https://samtools.github.io/hts-specs/SAMv1.pdf). 
 You can generate BAM files for your samples with most alignment tools such as bwa or bowtie. 
-We will start from these files and generate site-by-site [gVCF Files](https://gatk.broadinstitute.org/hc/en-us/articles/360035531812-GVCF-Genomic-Variant-Call-Format) for making gene seqeunce files. 
+We will start from these files and generate site-by-site [GVCF files](https://gatk.broadinstitute.org/hc/en-us/articles/360035531812-GVCF-Genomic-Variant-Call-Format) for making gene sequence files. 
 
 #### 2. Sample information
 The file `input/sample_info.txt` a tab-delimited file containing the names and group assignments of the samples. The group assignment will be used for plotting.
@@ -88,7 +88,7 @@ ANN0870	Ann-2
 The first 5 samples are from species `Ann` with genotype 0/0 of the focal chromosomal inversion (group 0), and the next 5 samples are from species `Ann` with genotype 1/1 (group 2). We also include 2 samples from each of other related (sub)species and the outgroup. 
 
 #### 3. Locations of focal genes within the region
-The file `input/genes.locations.txt` is a tab-delimited file with the following columns: gene name (strings without spaces), chromosome, start and end (in bp, based on the reference genome). It will be used to extact gene sequences from BAM files.
+The file `input/genes.locations.txt` is a tab-delimited file with the following columns: gene name (strings without spaces), chromosome, start and end (in bp, based on the reference genome). It will be used to extract gene sequences from BAM files.
 The first five rows of the example data:
 ```
 gene_1	HanXRQChr17	27130172	27133822
@@ -127,7 +127,7 @@ do
 	fi
 done < input/genes.locations.txt
 ```
-This step first produces a `g.vcf` for each gene for each sample from the BAM file using `gatk HaplotypeCaller`. The parameter `-ERC BP_RESOLUTION` outputs the genotype calls site by site, which will ease the conversion of `g.zvcf` to FASTA format using the custom script `script/gvcf2fasta_nogaps.pl`.
+This step first produces a `g.vcf` for each gene for each sample from the BAM file using `gatk HaplotypeCaller`. The parameter `-ERC BP_RESOLUTION` outputs the genotype calls site by site, which will ease the conversion of `g.vcf` to FASTA format using the custom script `script/gvcf2fasta_nogaps.pl`.
 A FASTA will be generated in `cache/` for each gene with sequences of all samples. Check if the numbers of sequences are correct: 
 ```
 ls cache/gene_*.fasta | wc -l # 82 genes in total
@@ -135,7 +135,7 @@ wc -l cache/gene_*.fasta # should be 40 (20 sequences in each FASTA) for all gen
 ```
 
 #### Step 2: filter gene FASTAs
-We filter the genes based on individual and averge missing rates across samples and generate a gene list for phylogenetic analysis
+We filter the genes based on individual and average missing rates across samples and generate a gene list for phylogenetic analysis
 ```
 cut -f1 input/genes.locations.txt | perl script/filter_phylo_genes.pl > cache/phylo_genes.list
 ```
@@ -153,10 +153,10 @@ perl script/fastas2BEAST1xml.pl \
 	--fastaList cache/gene_fastas.list \
 	--chainLength 1000000 \
 	--screenEcho 1000 \
-	--fileLog 1000 \
+	--fileLog 100 \
 	--out output/out
 ```
-Here we set the number of steps of MCMC (`--chainLength`) to be 1M and set the parameter values to be displayed on the screen (`--screenEcho`) and recorded in the log file (`--fileLog`) every 1k steps.
+Here we set the number of steps of MCMC (`--chainLength`) to be 1M and set the parameter values to be displayed on the screen (`--screenEcho`) every 1k steps and recorded in the log file (`--fileLog`) every 100 steps.
 This will generate `output/out.xml`, which BEAST will use to run the analysis.
 
 #### Step 4: run BEAST on command line
@@ -165,7 +165,7 @@ BEAGLE_PATH=$PWD/lib/beagle-lib-3.1.1/lib/ # specify the path to the BEAGLE libr
 export LD_LIBRARY_PATH=$BEAGLE_PATH:$LD_LIBRARY_PATH
 program/BEASTv1.10.4/bin/beast -threads 30 output/out.xml
 ```
-This is the main command of BEAST. It takes 1-2h with 30 threads. This steps will generate `output/out.log`, `output/out.trees` and `output/out.ops`.
+This is the main command of BEAST. It takes 1-2h with 30 threads. This step will generate `output/out.log`, `output/out.trees` and `output/out.ops`.
 
 #### Step 5: construct a consensus tree using TreeAnnotator
 We assume that the phylogenetic MCMC in BEAST reach convergence after 10k runs. We then create a maximum clade credibilty (MCC) tree summarizing the posterior tree distribution using the program TreeAnnotator within the BEAST package.
